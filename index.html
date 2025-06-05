@@ -6,14 +6,15 @@
   <title>Escala Multimídia IPT</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #ffffff;
       margin: 0;
       padding: 0;
       text-align: center;
+      color: #333;
     }
     header {
-      background: #003366;
+      background: #013b6f;
       color: white;
       padding: 20px 0;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -23,7 +24,7 @@
     }
     a.botao {
       display: inline-block;
-      background: #0055aa;
+      background: #01529c;
       color: white;
       padding: 12px 24px;
       border-radius: 8px;
@@ -44,17 +45,22 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     .info {
-      background: #ffffff;
+      background: #f4f4f4;
       padding: 20px;
       margin: 20px auto;
       max-width: 800px;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
+    .logo {
+      max-height: 80px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
   <header>
+    <img src="https://trindade.ipb.org.br/wp-content/uploads/2021/06/logo-trindade-horizontal-branca-1024x213.png" alt="Logo IPT" class="logo">
     <h1>Escala Multimídia - Igreja Presbiteriana na Trindade</h1>
   </header>
   <main>
@@ -66,9 +72,12 @@
         <li>Verificar eventos especiais</li>
       </ul>
       <a class="botao" href="https://forms.gle/poNw5FEaFjLdRNrL6" target="_blank">Preencher Formulário de Disponibilidade</a>
+      <a class="botao" href="#ver-escala" onclick="document.getElementById('tabela-escala').scrollIntoView({ behavior: 'smooth' });">Ver Escala Atual</a>
     </div>
 
-    <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRy-XEMsPwgOiE5M9qgEZdOjK3j4OReCGIaUzaW0dUGgnQMXaGmfykBgI_p2jH5TjdJsU0D1G1A_9Mf/pubhtml?gid=0&amp;single=true" allowfullscreen></iframe>
+    <div id="tabela-escala">
+      <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRy-XEMsPwgOiE5M9qgEZdOjK3j4OReCGIaUzaW0dUGgnQMXaGmfykBgI_p2jH5TjdJsU0D1G1A_9Mf/pubhtml?gid=0&amp;single=true" allowfullscreen></iframe>
+    </div>
   </main>
 </body>
 </html>
