@@ -1,52 +1,256 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Escala Multimídia IPT</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    header {
-      background: #003366;
-      color: white;
-      padding: 20px 0;
-    }
-    main {
-      padding: 20px;
-    }
-    a.botao {
-      display: inline-block;
-      background: #0055aa;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
-      margin: 10px;
-    }
-    iframe {
-      width: 95%;
-      height: 600px;
-      border: none;
-      margin-top: 20px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Escala Multimídia IPT - Editor</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 900px; margin: auto; padding: 20px; }
+  h1, h2 { color: #003366; }
+  table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+  th { background-color: #0055aa; color: white; }
+  input, select, button { padding: 6px; margin: 4px 0; font-size: 1rem; }
+  button { cursor: pointer; }
+  .flex-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .flex-column { display: flex; flex-direction: column; gap: 4px; }
+  .section { margin-bottom: 30px; }
+</style>
 </head>
 <body>
-  <header>
-    <h1>Escala Multimídia - Igreja Presbiteriana na Trindade</h1>
-  </header>
-  <main>
-    <p>Acesse abaixo o formulário de disponibilidade e visualize a escala atual:</p>
-    <a class="botao" href="https://forms.gle/ehKyLnLquAgMo1yP6" target="_blank">Preencher Formulário</a>
 
-    <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTwOQk4pG9q-Bw5U7bJZ4y8KnHp0cG0RO12nDwumzt2hJmVUuYFu8djCgHbk4oHg/pubhtml?widget=true&amp;headers=false"></iframe>
-  </main>
+  <h1>Editor da Escala Multimídia - IPT</h1>
+
+  <section class="section" id="operadores-section">
+    <h2>Operadores</h2>
+    <div class="flex-row">
+      <input type="text" id="input-nome-operador" placeholder="Nome do operador" />
+      <button onclick="adicionarOperador()">Adicionar Operador</button>
+    </div>
+    <table id="tabela-operadores">
+      <thead><tr><th>Nome</th><th>Ação</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="section" id="datas-section">
+    <h2>Datas (Domingos)</h2>
+    <div class="flex-row">
+      <input type="date" id="input-data" />
+      <button onclick="adicionarData()">Adicionar Domingo</button>
+    </div>
+    <table id="tabela-datas">
+      <thead><tr><th>Data</th><th>Ação</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="section" id="escala-section">
+    <h2>Montar Escala</h2>
+    <table id="tabela-escala">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Som</th>
+          <th>Projeção</th>
+          <th>Transmissão</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="section" id="exibicao-section">
+    <h2>Escala Atual</h2>
+    <table id="tabela-exibicao">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Som</th>
+          <th>Projeção</th>
+          <th>Transmissão</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+<script>
+  // Dados salvos localmente
+  let operadores = JSON.parse(localStorage.getItem('operadores') || '[]');
+  let datas = JSON.parse(localStorage.getItem('datas') || '[]');
+  let escala = JSON.parse(localStorage.getItem('escala') || '{}'); // { '2024-06-02': {som: 'nome', projecao: 'nome', transmissao: 'nome'} }
+
+  // Funções utilitárias
+  function salvarDados() {
+    localStorage.setItem('operadores', JSON.stringify(operadores));
+    localStorage.setItem('datas', JSON.stringify(datas));
+    localStorage.setItem('escala', JSON.stringify(escala));
+  }
+
+  function formatarData(d) {
+    const dt = new Date(d);
+    return dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  // Render operadores
+  function renderOperadores() {
+    const tbody = document.querySelector('#tabela-operadores tbody');
+    tbody.innerHTML = '';
+    operadores.forEach((op, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${op}</td><td><button onclick="removerOperador(${i})">Remover</button></td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Render datas
+  function renderDatas() {
+    const tbody = document.querySelector('#tabela-datas tbody');
+    tbody.innerHTML = '';
+    datas.forEach((d, i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${formatarData(d)}</td><td><button onclick="removerData(${i})">Remover</button></td>`;
+      tbody.appendChild(tr);
+    });
+    renderTabelaEscala();
+  }
+
+  // Render tabela escala para editar
+  function renderTabelaEscala() {
+    const tbody = document.querySelector('#tabela-escala tbody');
+    tbody.innerHTML = '';
+
+    datas.forEach(data => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${formatarData(data)}</td>
+        <td>${criarSelect('som', data)}</td>
+        <td>${criarSelect('projecao', data)}</td>
+        <td>${criarSelect('transmissao', data)}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Render escala exibida
+  function renderEscalaExibicao() {
+    const tbody = document.querySelector('#tabela-exibicao tbody');
+    tbody.innerHTML = '';
+
+    datas.forEach(data => {
+      const e = escala[data] || {};
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${formatarData(data)}</td>
+        <td>${e.som || ''}</td>
+        <td>${e.projecao || ''}</td>
+        <td>${e.transmissao || ''}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Criar select para escolher operador
+  function criarSelect(funcao, data) {
+    const sel = document.createElement('select');
+    sel.onchange = function() {
+      if (!escala[data]) escala[data] = {};
+      escala[data][funcao] = sel.value || null;
+      salvarDados();
+      renderEscalaExibicao();
+    };
+    const vazio = document.createElement('option');
+    vazio.value = '';
+    vazio.textContent = '-- escolha --';
+    sel.appendChild(vazio);
+
+    operadores.forEach(op => {
+      const opt = document.createElement('option');
+      opt.value = op;
+      opt.textContent = op;
+      if (escala[data] && escala[data][funcao] === op) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    return sel.outerHTML;
+  }
+
+  // Adicionar operador
+  function adicionarOperador() {
+    const input = document.getElementById('input-nome-operador');
+    const nome = input.value.trim();
+    if (nome && !operadores.includes(nome)) {
+      operadores.push(nome);
+      salvarDados();
+      input.value = '';
+      renderOperadores();
+      renderTabelaEscala();
+      renderEscalaExibicao();
+    } else {
+      alert('Nome inválido ou já cadastrado.');
+    }
+  }
+
+  // Remover operador
+  function removerOperador(i) {
+    const nome = operadores[i];
+    if (confirm(`Remover operador "${nome}"?`)) {
+      operadores.splice(i, 1);
+      // Limpar escala com esse nome
+      for (const d of Object.keys(escala)) {
+        ['som','projecao','transmissao'].forEach(funcao => {
+          if (escala[d][funcao] === nome) escala[d][funcao] = null;
+        });
+      }
+      salvarDados();
+      renderOperadores();
+      renderTabelaEscala();
+      renderEscalaExibicao();
+    }
+  }
+
+  // Adicionar data
+  function adicionarData() {
+    const input = document.getElementById('input-data');
+    const data = input.value;
+    if (data && !datas.includes(data)) {
+      // Verifica se é domingo
+      const dt = new Date(data);
+      if (dt.getDay() !== 0) {
+        alert('Por favor, selecione uma data que seja domingo.');
+        return;
+      }
+      datas.push(data);
+      datas.sort();
+      salvarDados();
+      input.value = '';
+      renderDatas();
+      renderTabelaEscala();
+      renderEscalaExibicao();
+    } else {
+      alert('Data inválida ou já cadastrada.');
+    }
+  }
+
+  // Remover data
+  function removerData(i) {
+    const data = datas[i];
+    if (confirm(`Remover data ${formatarData(data)}?`)) {
+      datas.splice(i, 1);
+      delete escala[data];
+      salvarDados();
+      renderDatas();
+      renderTabelaEscala();
+      renderEscalaExibicao();
+    }
+  }
+
+  // Inicializa página
+  function init() {
+    renderOperadores();
+    renderDatas();
+    renderTabelaEscala();
+    renderEscalaExibicao();
+  }
+
+  init();
+</script>
+
 </body>
 </html>
